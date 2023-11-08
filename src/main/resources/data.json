@@ -1,0 +1,28 @@
+{
+  "firstMessage": {
+    "text": "Привет! С помощью этого теста ты сможешь определить какая ты феечка. Возможно, это тебе поможет решить твою судьбу.",
+    "image": "https://upload.wikimedia.org/wikipedia/ru/thumb/6/64/Winx-Protagonists.png/300px-Winx-Protagonists.png",
+    "button": "Начать"
+  },
+
+  "task1":
+  {
+    "text": "",
+    "image": "",
+    "button1": "",
+    "button2": "",
+    "button3": "",
+    "button4": ""
+  },
+
+  "task2":
+  {
+    "text": "",
+    "image": "",
+    "button1": "",
+    "button2": "",
+    "button3": "",
+    "button4": ""
+  },
+
+}

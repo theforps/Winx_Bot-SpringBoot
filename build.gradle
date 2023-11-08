@@ -22,6 +22,7 @@ repositories {
 }
 
 dependencies {
+	implementation 'net.minidev:json-smart:2.5.0'
 	implementation 'org.telegram:telegrambots:5.6.0'
 	implementation 'org.springframework.boot:spring-boot-starter'
 	compileOnly 'org.projectlombok:lombok'
