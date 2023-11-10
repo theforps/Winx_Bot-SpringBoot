@@ -70,7 +70,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void showResult(Long chatId)
     {
-        JSONObject obj = Consts.JSON.getJSONObject("result" + String.valueOf(result % 7));
+        JSONObject obj = Consts.JSON.getJSONObject("result" + String.valueOf(result % 6));
         SendPhoto sendPhoto = new SendPhoto();
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
 
