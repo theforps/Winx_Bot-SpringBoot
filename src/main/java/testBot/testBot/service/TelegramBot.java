@@ -71,21 +71,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void showResult(Long chatId)
     {
         JSONObject obj = Consts.JSON.getJSONObject("result" + String.valueOf(result % 6));
-        SendPhoto sendPhoto = new SendPhoto();
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-
-        sendPhoto.setChatId(String.valueOf(chatId));
-        sendPhoto.setPhoto(new InputFile(obj.getString("image")));
-        sendPhoto.setCaption(obj.getString("text"));
-
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
-
-        InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton("Начать заново");
-        inlineKeyboardButton1.setCallbackData("Начать");
-        rowInline1.add(inlineKeyboardButton1);
-        rowsInline.add(rowInline1);
-        markupInline.setKeyboard(rowsInline);
+        SendPhoto sendPhoto = createMessage(obj, chatId);
+        InlineKeyboardMarkup markupInline = startBut();
 
         sendPhoto.setReplyMarkup(markupInline);
 
@@ -98,21 +85,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void firstMessage(Long chatId) {
 
         JSONObject obj = Consts.JSON.getJSONObject("firstMessage");
-        SendPhoto sendPhoto = new SendPhoto();
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-
-        sendPhoto.setChatId(String.valueOf(chatId));
-        sendPhoto.setPhoto(new InputFile(obj.getString("image")));
-        sendPhoto.setCaption(obj.getString("text"));
-
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
-
-        InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton("Начать");
-        inlineKeyboardButton1.setCallbackData("Начать");
-        rowInline1.add(inlineKeyboardButton1);
-        rowsInline.add(rowInline1);
-        markupInline.setKeyboard(rowsInline);
+        SendPhoto sendPhoto = createMessage(obj, chatId);
+        InlineKeyboardMarkup markupInline = startBut();
 
         sendPhoto.setReplyMarkup(markupInline);
 
@@ -125,13 +99,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void test(long chatId)
     {
         JSONObject obj = Consts.JSON.getJSONObject("task" + String.valueOf(counter));
-        SendPhoto sendPhoto = new SendPhoto();
+        SendPhoto sendPhoto = createMessage(obj, chatId);
+
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-
-        sendPhoto.setChatId(String.valueOf(chatId));
-        sendPhoto.setPhoto(new InputFile(obj.getString("image")));
-        sendPhoto.setCaption(obj.getString("text"));
-
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
 
@@ -160,6 +130,29 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     }
 
+    private InlineKeyboardMarkup startBut()
+    {
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton("Начать");
+        inlineKeyboardButton1.setCallbackData("Начать");
+        rowInline1.add(inlineKeyboardButton1);
+        rowsInline.add(rowInline1);
+        markupInline.setKeyboard(rowsInline);
+
+        return markupInline;
+    }
+
+    private SendPhoto createMessage(JSONObject obj, Long chatId)
+    {
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setChatId(String.valueOf(chatId));
+        sendPhoto.setPhoto(new InputFile(obj.getString("image")));
+        sendPhoto.setCaption(obj.getString("text"));
+
+        return sendPhoto;
+    }
 
     private void deleteMessage(long chatId, Integer messageId)
     {

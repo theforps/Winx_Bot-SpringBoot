@@ -1,9 +1,0 @@
-meta:
-  environment: jvm
-  toolchain:
-    name: gradle
-    version: 17
-
-run:
-  jarName: WinxBot-v1-all.jar
-  containerPort: 8080
