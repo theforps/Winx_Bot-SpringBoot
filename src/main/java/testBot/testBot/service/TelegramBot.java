@@ -1,27 +1,26 @@
 package testBot.testBot.service;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import testBot.testBot.config.BotConfig;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import testBot.testBot.scripts.Consts;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final BotConfig config;
-    private final JSONObject json = new JSONObject(new String(Files.readAllBytes(Paths.get("src/main/resources/data.json")), StandardCharsets.UTF_8));
+    private int counter = 0, result = 0;
 
-    public TelegramBot(BotConfig config) throws IOException {
+    public TelegramBot(BotConfig config) {
         this.config = config;
     }
 
@@ -29,37 +28,138 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
 
         Message message = update.getMessage();
-        Long chatId = message.getChatId();
-        Integer messageId = message.getMessageId();
+        Long chatId;
+        Integer messageId;
 
-        if(message.hasText())
+        if(message != null) {
+            chatId = message.getChatId();
+            messageId = message.getMessageId();
+        }
+        else {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+            messageId = update.getCallbackQuery().getMessage().getMessageId();
+        }
+
+        deleteMessage(chatId, messageId);
+
+        if (message != null && message.getText().equals("/start"))
         {
-            if (message.getText().equals("/start"))
+            firstMessage(chatId);
+        }
+        else if (update.hasCallbackQuery())
+        {
+
+            if(update.getCallbackQuery().getData().equals("Начать"))
             {
-                firstMessage(update);
+                counter = 0;
+                result = 0;
+                test(chatId);
+            }
+            else if(counter >= 9)
+            {
+                showResult(chatId);
             }
             else
             {
-                deleteMessage(chatId, messageId);
+                result += Integer.parseInt(update.getCallbackQuery().getData());
+                counter++;
+                test(chatId);
             }
         }
     }
 
-    private void firstMessage(Update update)  {
+    private void showResult(Long chatId)
+    {
+        JSONObject obj = Consts.JSON.getJSONObject("result" + String.valueOf(result % 7));
+        SendPhoto sendPhoto = new SendPhoto();
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
 
-        Long chatId = update.getMessage().getChatId();
-        SendMessage sendMessage = new SendMessage();
+        sendPhoto.setChatId(String.valueOf(chatId));
+        sendPhoto.setPhoto(new InputFile(obj.getString("image")));
+        sendPhoto.setCaption(obj.getString("text"));
 
-        String text = json.getJSONObject("firstMessage").getString("text");
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
 
-        sendMessage.setChatId(String.valueOf(chatId));
-        sendMessage.setText(text);
+        InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton("Начать заново");
+        inlineKeyboardButton1.setCallbackData("Начать");
+        rowInline1.add(inlineKeyboardButton1);
+        rowsInline.add(rowInline1);
+        markupInline.setKeyboard(rowsInline);
+
+        sendPhoto.setReplyMarkup(markupInline);
 
         try {
-            execute(sendMessage);
+            execute(sendPhoto);
         }
         catch (TelegramApiException ignored) {}
     }
+
+    private void firstMessage(Long chatId) {
+
+        JSONObject obj = Consts.JSON.getJSONObject("firstMessage");
+        SendPhoto sendPhoto = new SendPhoto();
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+
+        sendPhoto.setChatId(String.valueOf(chatId));
+        sendPhoto.setPhoto(new InputFile(obj.getString("image")));
+        sendPhoto.setCaption(obj.getString("text"));
+
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+
+        InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton("Начать");
+        inlineKeyboardButton1.setCallbackData("Начать");
+        rowInline1.add(inlineKeyboardButton1);
+        rowsInline.add(rowInline1);
+        markupInline.setKeyboard(rowsInline);
+
+        sendPhoto.setReplyMarkup(markupInline);
+
+        try {
+            execute(sendPhoto);
+        }
+        catch (TelegramApiException ignored) {}
+    }
+
+    private void test(long chatId)
+    {
+        JSONObject obj = Consts.JSON.getJSONObject("task" + String.valueOf(counter));
+        SendPhoto sendPhoto = new SendPhoto();
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+
+        sendPhoto.setChatId(String.valueOf(chatId));
+        sendPhoto.setPhoto(new InputFile(obj.getString("image")));
+        sendPhoto.setCaption(obj.getString("text"));
+
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+
+        for(int i = 1; i <= 4; i++)
+        {
+            InlineKeyboardButton but = new InlineKeyboardButton(obj.getString(String.valueOf(i)));
+            but.setCallbackData(String.valueOf(i));
+
+            rowInline1.add(but);
+
+            if(i % 2 == 0)
+            {
+                rowsInline.add(rowInline1);
+                rowInline1 = new ArrayList<>();
+            }
+        }
+
+        markupInline.setKeyboard(rowsInline);
+        sendPhoto.setReplyMarkup(markupInline);
+
+        try {
+            execute(sendPhoto);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
 
     private void deleteMessage(long chatId, Integer messageId)
     {
