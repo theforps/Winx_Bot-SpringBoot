@@ -12,8 +12,12 @@ import testBot.testBot.service.TelegramBot;
 @Component
 public class BotInit {
 
+
+    private final TelegramBot bot;
     @Autowired
-    TelegramBot bot;
+    public BotInit(TelegramBot bot) {
+        this.bot = bot;
+    }
 
     @EventListener({ContextRefreshedEvent.class})
     public void Init() throws TelegramApiException {

@@ -13,7 +13,7 @@ public class Consts {
 
     static {
         try {
-            JSON = new JSONObject(new String(Files.readAllBytes(Paths.get("src/main/resources/data.json")), StandardCharsets.UTF_8));
+            JSON = new JSONObject(new String(Files.readAllBytes(Paths.get("/bots/WinxClub/build/resources/main/data.json")), StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

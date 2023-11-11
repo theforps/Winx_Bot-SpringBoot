@@ -1,6 +1,8 @@
 package testBot.testBot.service;
 
+import jakarta.inject.Scope;
 import org.json.JSONObject;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -12,13 +14,14 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import testBot.testBot.config.BotConfig;
 import testBot.testBot.scripts.Consts;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final BotConfig config;
-    private int counter = 0, result = 0;
+    private HashMap<Long, List<Integer>> map = new HashMap<>();
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -29,6 +32,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         Message message = update.getMessage();
         Long chatId;
+        List<Integer> numbers;
         Integer messageId;
 
         if(message != null) {
@@ -51,18 +55,37 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             if(update.getCallbackQuery().getData().equals("Начать"))
             {
-                counter = 0;
-                result = 0;
+                map.remove(chatId);
+
+                numbers = new ArrayList<>();
+                numbers.add(0);
+                numbers.add(0);
+                map.put(chatId, numbers);
+
                 test(chatId);
             }
-            else if(counter >= 9)
+            else if(map.get(chatId).get(0) >= 9)
             {
+
                 showResult(chatId);
             }
             else
             {
+
+                var getData = map.get(chatId);
+
+                int result = getData.get(1);
+                int counter = getData.get(0);
+
                 result += Integer.parseInt(update.getCallbackQuery().getData());
                 counter++;
+
+                List<Integer> temp = new ArrayList<>();
+                temp.add(counter);
+                temp.add(result);
+
+                map.put(chatId, temp);
+
                 test(chatId);
             }
         }
@@ -70,7 +93,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void showResult(Long chatId)
     {
-        JSONObject obj = Consts.JSON.getJSONObject("result" + String.valueOf(result % 6));
+        var getData = map.get(chatId).get(1);
+
+        JSONObject obj = Consts.JSON.getJSONObject("result" + String.valueOf(getData % 6));
         SendPhoto sendPhoto = createMessage(obj, chatId);
         InlineKeyboardMarkup markupInline = startBut();
 
@@ -96,9 +121,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         catch (TelegramApiException ignored) {}
     }
 
-    private void test(long chatId)
+    private void test(Long chatId)
     {
-        JSONObject obj = Consts.JSON.getJSONObject("task" + String.valueOf(counter));
+        var getData = map.get(chatId);
+
+        JSONObject obj = Consts.JSON.getJSONObject("task" + String.valueOf(getData.get(0)));
         SendPhoto sendPhoto = createMessage(obj, chatId);
 
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
