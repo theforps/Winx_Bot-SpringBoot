@@ -13,18 +13,26 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import testBot.testBot.config.BotConfig;
 import testBot.testBot.scripts.Consts;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final BotConfig config;
-    private HashMap<Long, List<Integer>> map = new HashMap<>();
+    private Map<Long, List<Integer>> map = new HashMap<>();
+    private JSONObject JSON;
 
-    public TelegramBot(BotConfig config) {
+    public TelegramBot(BotConfig config) throws IOException {
         this.config = config;
+        JSON = new JSONObject(new String(Files.readAllBytes(Paths.get(config.getDataPath())), StandardCharsets.UTF_8));
     }
 
     @Override
@@ -95,7 +103,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     {
         var getData = map.get(chatId).get(1);
 
-        JSONObject obj = Consts.JSON.getJSONObject("result" + String.valueOf(getData % 6));
+        JSONObject obj = JSON.getJSONObject("result" + String.valueOf(getData % 6));
         SendPhoto sendPhoto = createMessage(obj, chatId);
         InlineKeyboardMarkup markupInline = startBut();
 
@@ -109,7 +117,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void firstMessage(Long chatId) {
 
-        JSONObject obj = Consts.JSON.getJSONObject("firstMessage");
+        JSONObject obj = JSON.getJSONObject("firstMessage");
         SendPhoto sendPhoto = createMessage(obj, chatId);
         InlineKeyboardMarkup markupInline = startBut();
 
@@ -125,7 +133,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     {
         var getData = map.get(chatId);
 
-        JSONObject obj = Consts.JSON.getJSONObject("task" + String.valueOf(getData.get(0)));
+        JSONObject obj = JSON.getJSONObject("task" + String.valueOf(getData.get(0)));
         SendPhoto sendPhoto = createMessage(obj, chatId);
 
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
